@@ -100,7 +100,13 @@ public class SwerveDriveDefaultCommand extends CommandBase {
         strafe  =  -MathUtil.clamp(MathUtil.applyDeadband(axis(Axis.STRAFE),  DEADBAND_LOW) * speed, -1, 1);
         rotate  =  -MathUtil.clamp(MathUtil.applyDeadband(axis(Axis.TURN),    DEADBAND_LOW) * speed, -1, 1);
 
-        yawCorrection = drive.correctHeading(0.004, forward, strafe, rotate);
+        if(driveMode == goalOriented || driveMode == ballOriented) {
+            yawCorrection = 0;
+        } else if (driveMode == robotOriented || driveMode == fieldOriented) {
+            yawCorrection = drive.correctHeading(0.004, forward, strafe, rotate);
+
+        }
+        
 
         //puts robot into safemode where the robot will go slower
          if(button(DriveMode.SAFEMMODE)) {
@@ -164,28 +170,35 @@ public class SwerveDriveDefaultCommand extends CommandBase {
             
             driveMode = fieldOriented;
             System.out.println("No valid target to change drive mode" + "\n Switching to Field Oriented Mode");
+        } else {
+
+            comboStartTimeGoal = 0;
+            alreadyToggledGoalMode = false;
         }
 
         //toggle ball centric mode
-        if(button(DriveMode.BALLMODE) && !button(DriveMode.GOALMODE) && !button(DriveMode.FIELDMODE) && detectionData.isAnyBallDetected()) {
+        if(button(DriveMode.BALLMODE) && !button(DriveMode.GOALMODE) && !button(DriveMode.FIELDMODE)) { //&& detectionData.isAnyBallDetected()) {
 
             if(comboStartTimeBall == 0) {
-                comboStartTimeGoal = Timer.getFPGATimestamp();
+                comboStartTimeBall = Timer.getFPGATimestamp();
             } else if(Timer.getFPGATimestamp() - comboStartTimeBall >= buttonDelay && !alreadyToggledBallMode) {
                 ballOrientedMode = !goalOrientedMode;
 
-                alreadyToggledBallMode = false;
+                alreadyToggledBallMode = true;
                 driveMode = ballOrientedMode ? ballOriented : fieldOriented;
                 System.out.println("Switching to " + (ballOrientedMode ? "Ball Oriented" : "Field Oriented") + ".");
             }
 
-        } else if(button(DriveMode.BALLMODE) && !button(DriveMode.GOALMODE) && !button(DriveMode.FIELDMODE) && !detectionData.isAnyBallDetected()) {
+        } else if(button(DriveMode.BALLMODE) && !button(DriveMode.GOALMODE) && !button(DriveMode.FIELDMODE)) { //&& !detectionData.isAnyBallDetected()) {
 
             comboStartTimeBall = 0;
             alreadyToggledBallMode = false;
             
             driveMode = fieldOriented;
             System.out.println("No valid target to change drive mode" + "\n Switching to Field Oriented Mode");
+        } else {
+            comboStartTimeBall = 0;
+            alreadyToggledBallMode = false;
         }
 
         if(button(DriveMode.ZERO_GYRO)) {
@@ -200,19 +213,24 @@ public class SwerveDriveDefaultCommand extends CommandBase {
                     break;
             case robotOriented: drive.swerveDrive(forward, strafe, rotate - yawCorrection, false);
                     break;
-            case goalOriented: drive.swerveDrive(forward + limelight.limelightYPID(), 
-                                                 strafe, 
-                                                 rotate + limelight.limelightXPID() - yawCorrection, 
+            case goalOriented: drive.swerveDrive(-forward, 
+                                                 -strafe, 
+                                                 rotate - limelight.limelightXPID(), 
                                                  false);
                     break;
             case ballOriented: drive.swerveDrive(-forward + detectionData.piYPID(), 
                                                  -strafe, 
-                                                 -rotate + detectionData.piXPID() - yawCorrection, 
+                                                 -rotate - detectionData.piXPID("blue"), 
                                                   false);
                     break;
             default: drive.swerveDrive(forward, strafe, rotate - yawCorrection, true);
                      break;
         }
+
+        //System.out.println(detectionData.getOffsetX("blue"));
+        System.out.println(detectionData.piXPID("blue"));
+
+        //System.out.println(driveMode);
 
         //robot odometry
         //drive.calculateRobotPosition();

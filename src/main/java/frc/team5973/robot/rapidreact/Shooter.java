@@ -5,6 +5,7 @@ import com.revrobotics.ColorMatch;
 import com.revrobotics.ColorMatchResult;
 import com.revrobotics.ColorSensorV3;
 
+import edu.wpi.first.wpilibj.DutyCycleEncoder;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.I2C.Port;
 import edu.wpi.first.wpilibj.util.Color;
@@ -13,8 +14,8 @@ import frc.team5973.robot.subsystems.SubsystemBase;
 
 public class Shooter extends SubsystemBase {
     
-    private final double SHOOTER_SPEED = 1;
-    private final double OUTAKE_SPEED = 0.7;
+    private double SHOOTER_SPEED = 0.72;
+    private final double OUTAKE_SPEED = 1;
 
     private WPI_TalonSRX shooterWheel;
     private WPI_TalonSRX shooterOutake;
@@ -24,6 +25,8 @@ public class Shooter extends SubsystemBase {
 
     private Color redBallColor;
     private Color blueBallColor;
+
+   // private DutyCycleEncoder rotateEncoder;
 
     public enum ShooterInput {BUTTON}
 
@@ -46,9 +49,19 @@ public class Shooter extends SubsystemBase {
         addChild("shooterWheel", shooterWheel);
         addChild("shooterOutake", shooterOutake);
 
-        shooterWheel.setInverted(false);
+        shooterWheel.setInverted(true);
         shooterOutake.setInverted(true);
+
+        shooterWheel.configOpenloopRamp(0);
+        shooterWheel.configClosedloopRamp(0);
+        
+        shooterOutake.configOpenloopRamp(0);
+        shooterOutake.configClosedloopRamp(0);
     }
+
+    // private void cofigEncoder() {
+    //     rotateEncoder = new DutyCycleEncoder(0); //TODO: need ot figure out the correct port
+    // }
 
     private void configureColorSensors() {
         
@@ -60,10 +73,10 @@ public class Shooter extends SubsystemBase {
         
     }
 
-    public void shoot() {
+    public void shoot(double shooterSpeed) {
             
             //spin up flywheel
-            shooterWheel.set(SHOOTER_SPEED);
+            shooterWheel.set(shooterSpeed);
             
             // Wait for 1 second to allow wheel to spin up   
             timer.reset();

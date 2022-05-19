@@ -89,34 +89,89 @@ public class Limelight extends SubsystemBase {
 
 	}
 
+	double integralX = 0;
 	public double limelightXPID() {
-		double kP = 0.008;
-		double correctionMin = 0.003;
+		// double kP = 0.008;
+		// double correctionMin = 0.003;
+		// double deadzone = 0.05;
+		// double correction = getOffsetX() * kP;
+
+		// if(correction < correctionMin)
+		// 	correction = Math.copySign(correctionMin, correction);
+
+		// if(Math.abs(getOffsetX()) < deadzone)
+		// 	correction = 0;
+		
+		// return correction;
+
+		double kP = 0.01;
 		double deadzone = 0.05;
 		double correction = getOffsetX() * kP;
 
-		if(correction < correctionMin)
-			correction = Math.copySign(correctionMin, correction);
-
 		if(Math.abs(getOffsetX()) < deadzone)
 			correction = 0;
-		
+
 		return correction;
+
+		// double kP = 0.008;
+		// double deadzone = 0.05;
+		// double kI = 0.001;
+		// double IZone = 4.0;
+		// double ILimit = 1000;
+
+		// if(Math.abs(getOffsetX()) < IZone)
+		// 	integralX += getOffsetX();
+
+		// if(Math.abs(integralX) > ILimit)
+		// 	integralX = 600 * (integralX / Math.abs(integralX));
+
+		// double correction = getOffsetX() * kP + integralX * kI;
+
+		// if(Math.abs(getOffsetX()) < deadzone)
+		// 	correction = 0;
+		
+		// return correction;
+
 	}
 
+	double integralY = 0;
 	public double limelightYPID() {
-		double kP = 0.008;
-		double correctionMin = 0.003;
-		double deadzone = 0.05;
+		// double kP = 0.008;
+		// double correctionMin = 0.003;
+		// double deadzone = 0.05;
+		// double correction = getOffsetY() * kP;
+
+		// if(correction < correctionMin)
+		// 	correction = Math.copySign(correctionMin, correction);
+
+		// if(Math.abs(getOffsetY()) < deadzone)
+		// 	correction = 0;
+		
+		// return correction;
+
+		double kP = 0.05;
 		double correction = getOffsetY() * kP;
 
-		if(correction < correctionMin)
-			correction = Math.copySign(correctionMin, correction);
-
-		if(Math.abs(getOffsetY()) < deadzone)
-			correction = 0;
-		
 		return correction;
+
+		// double kP = 0.008;
+		// double deadzone = 0.05;
+		// double kI = 0.001;
+		// double IZone = 4.0;
+		// double ILimit = 1000;
+
+		// if(Math.abs(getOffsetY()) < IZone)
+		// 	integralY += getOffsetY();
+
+		// if(Math.abs(integralY) > ILimit)
+		// 	integralY = 600 * (integralY / Math.abs(integralY));
+
+		// double correction = getOffsetY() * kP + integralY * kI;
+
+		// if(Math.abs(getOffsetY()) < deadzone)
+		// 	correction = 0;
+		
+		// return correction;
 
 	}
 

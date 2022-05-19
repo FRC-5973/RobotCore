@@ -33,10 +33,10 @@ public class Robot extends RobotBase {
 	private int driverPort  = 0;
 	private int copilotPort = 1;
 
-	private final double SPEED_NORMAL  = 0.7;
+	private final double SPEED_NORMAL  = 0.9;
 	private final double SPEED_SAFE    = 0.3;
 	
-	private final double DEADBAND_LOW  = 0.1;
+	private final double DEADBAND_LOW  = 0.04;
 	private final double DEADBAND_HIGH = 1;
 
 	private XinputController driver  = new XinputController(driverPort);
@@ -45,7 +45,7 @@ public class Robot extends RobotBase {
 	public Robot() {
 		super("Rapidreact");
 
-        port("shooterWheel",  9);  
+        port("shooterWheel",  12);  
 		port("shooterOutake", 8); 
 		
 		port("intakeWheels", 10);
@@ -87,7 +87,7 @@ public class Robot extends RobotBase {
 			DriveMode.ZERO_GYRO, () -> copilot.getStartButton()
 			)));
 
-		shooter.setDefaultCommand(new ShooterDefaultCommand(shooter, Map.of(
+		shooter.setDefaultCommand(new ShooterDefaultCommand(shooter, limelight, Map.of(
 			ShooterInput.BUTTON, () -> driver.getBButton()
 		)));
 

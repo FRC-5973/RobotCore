@@ -3,6 +3,7 @@ package frc.team5973.robot.rapidreact;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.wpilibj.Timer;
 import frc.team5973.robot.RobotBase;
 import frc.team5973.robot.subsystems.SubsystemBase;
 public class DetectionData extends SubsystemBase {
@@ -32,6 +33,8 @@ public class DetectionData extends SubsystemBase {
     public NetworkTableEntry isRedBallDetected;
 
     private double distanceFromTarget;
+
+    private Timer timer = new Timer();
 
     public DetectionData(RobotBase robot) {
         super(robot);
@@ -143,6 +146,9 @@ public class DetectionData extends SubsystemBase {
 
     public boolean isBlueBallDetected() {
         isBlueBallDetected = blueBalls.getEntry("Blue Ball in Frame");
+
+        timer.reset();
+        timer.start();
         
         return isBlueBallDetected.getBoolean(false);
     }
@@ -188,7 +194,7 @@ public class DetectionData extends SubsystemBase {
             offset = getCrosshairX() - getBlueBallCenterX();
         }
 
-        return offset;
+        return -offset;
         
     }
 
@@ -202,40 +208,49 @@ public class DetectionData extends SubsystemBase {
             offset = getCrosshairY() - getBlueBallCenterY();
         }
 
-        return offset;
+        return -offset;
         
     }
 
-    public double piXPID() {
+    public double piXPID(String ballType) {
 		
-        double kP = 0.008;
-        double correctionMin = 0.003;
-        double deadzone = 0.05;
-        double correction = 0;
+        // double kP = 0.008;
+        // double correctionMin = 0.003;
+        // double deadzone = 0.05;
+        // double correction = 0;
         
-        if(isBlueBallDetected()) {
+        // if((ballType.equals("red"))) {
     
-            correction = getOffsetX("blue") * kP;
+        //     correction = getOffsetX("blue") * kP;
 
-            if(correction < correctionMin)
-                correction = Math.copySign(correctionMin, correction);
+        //     if(correction < correctionMin)
+        //         correction = Math.copySign(correctionMin, correction);
 
-            if(Math.abs(getOffsetX("blue")) < deadzone)
-                correction = 0;
+        //     if(Math.abs(getOffsetX("blue")) < deadzone)
+        //         correction = 0;
 
-        } else if(isRedBallDetected()) {
-            correction = getOffsetX("red") * kP;
+        // } else if((ballType.equals("blue"))) {
+        //     correction = getOffsetX("red") * kP;
 
-            if(correction < correctionMin)
-                correction = Math.copySign(correctionMin, correction);
+        //     if(correction < correctionMin)
+        //         correction = Math.copySign(correctionMin, correction);
 
-            if(Math.abs(getOffsetX("red")) < deadzone)
-                correction = 0;
-        } else {
+        //     if(Math.abs(getOffsetX("red")) < deadzone)
+        //         correction = 0;
+        // } else {
 
-            System.out.println("No ball detected");
-        }
+        //     System.out.println("No ball detected");
+        // }
 		
+		// return correction;
+
+        double kP = 0.001;
+		double deadzone = 5;
+		double correction = getOffsetX("blue") * kP;
+
+		if(Math.abs(getOffsetX("blue")) < deadzone)
+			correction = 0;
+
 		return correction;
 	}
 

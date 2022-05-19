@@ -53,14 +53,14 @@ public class Intake extends SubsystemBase {
 	}
 
 	public void extend() {
-		leftArm.setAngle(30);
-		rightArm.setAngle(0);
+		leftArm.setAngle(0);
+		rightArm.setAngle(30);
 	
 	}
 
 	public void retract() {
-		leftArm.setAngle(0);
-		rightArm.setAngle(30);
+		leftArm.setAngle(30);
+		rightArm.setAngle(0);
 
 	}
 
