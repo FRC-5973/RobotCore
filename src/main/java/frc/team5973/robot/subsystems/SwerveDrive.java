@@ -1,11 +1,13 @@
 package frc.team5973.robot.subsystems;
 
+//pheonix libraries imports
 import com.ctre.phoenix.motorcontrol.FeedbackDevice;
 import com.ctre.phoenix.motorcontrol.NeutralMode;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
 import com.ctre.phoenix.sensors.Pigeon2;
 
+//WPILib imports
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.Timer;
@@ -13,60 +15,54 @@ import edu.wpi.first.wpilibj.Timer;
 import frc.team5973.robot.RobotBase;
 public class SwerveDrive extends SubsystemBase {
     
-    private Pigeon2 gyro;
+    private Pigeon2 gyro; //declare gyro
 
-    private double KpAnglefl = 0.015;
+    private double KpAnglefl = 0.015; //PID values for each rotation encoder
 	private double KiAnglefl = 0;
 	private double KdAnglefl = 0;
 
-    private double KpAnglefr = 0.015;
+    private double KpAnglefr = 0.015; //PID values for each rotation encoder
 	private double KiAnglefr = 0;
 	private double KdAnglefr = 0;
 
-    private double KpAnglebl = 0.015;
+    private double KpAnglebl = 0.015; //PID values for each rotation encoder
 	private double KiAnglebl = 0;
 	private double KdAnglebl = 0;
 
-    private double KpAnglebr = 0.015;
+    private double KpAnglebr = 0.015; //PID values for each rotation encoder
 	private double KiAnglebr = 0;
 	private double KdAnglebr = 0;
 
-    private WPI_TalonFX frontRightSpeedMotor;
+    private WPI_TalonFX frontRightSpeedMotor; //declare speed motors
     private WPI_TalonFX frontLeftSpeedMotor;
     private WPI_TalonFX backRightSpeedMotor;
     private WPI_TalonFX backLeftSpeedMotor;
     
-    private WPI_TalonSRX frontRightAngleMotor;
+    private WPI_TalonSRX frontRightAngleMotor; //declare rotation motors
     private WPI_TalonSRX frontLeftAngleMotor;
     private WPI_TalonSRX backRightAngleMotor;
     private WPI_TalonSRX backLeftAngleMotor;
 
-    // private Encoder frontLeftEncoder;
-    // private Encoder frontRightEncoder;
-    // private Encoder backLeftEncoder;
-    // private Encoder backRightEncoder;
-
-    private boolean sensorPhasefl = false;
+    private boolean sensorPhasefl = false; //decide whether to invert the sensor values on the encoder or not
     private boolean sensorPhasefr = true;
     private boolean sensorPhaseBr = false;
     private boolean sensorPhaseBl = false;
 
-    private PIDController pidAnglefl;
+    private PIDController pidAnglefl; //declare pid controllers
     private PIDController pidAnglefr;
     private PIDController pidAnglebl;
     private PIDController pidAnglebr;
 
     private final double L  = 23; //vehicle tracklength
     private final double W  = 23; //vehicle trackwidth
-    private final double R  = Math.sqrt(Math.pow(L, 2) + Math.pow(W, 2));
+    private final double R  = Math.sqrt(Math.pow(L, 2) + Math.pow(W, 2)); //math needed for the swerve drive calculations
     private final double PI = Math.PI;
 
-    private double positionAlongField = 0;
+    private double positionAlongField = 0; //robot odemetry position
     private double positionAcrossField = 0;
 
-    public enum Axis {FORWARD, STRAFE, TURN, BUTTON}
+    public enum Axis {FORWARD, STRAFE, TURN, BUTTON} //controller inputs for swerve
     public enum DriveMode {SAFEMMODE, FIELDMODE, GOALMODE, BALLMODE, ZERO_GYRO}
-    public enum SwerveModule {FRONT_LEFT, FRONT_RIGHT, BACK_LEFT, BACK_RIGHT}
 
     private double STRNew = 0;
     private double FWDNew = 0;
@@ -86,6 +82,8 @@ public class SwerveDrive extends SubsystemBase {
 
     private void configureMotors() {
 
+        //declare ports for the motors using our custom port mapping
+        // if you dont want to use the custom port mapping just replace port() with the port number of the motor or your own variables
         frontRightSpeedMotor = new WPI_TalonFX(port("frontRightSpeedMotor"));
         frontLeftSpeedMotor  = new WPI_TalonFX(port("frontLeftSpeedMotor"));
         backRightSpeedMotor  = new WPI_TalonFX(port("backRightSpeedMotor"));
@@ -118,21 +116,24 @@ public class SwerveDrive extends SubsystemBase {
         backRightAngleMotor.setInverted(true);
         backLeftAngleMotor.setInverted(true);
 
+        //set angle motors to their default facotry state
         frontRightAngleMotor.configFactoryDefault();
         frontLeftAngleMotor.configFactoryDefault();
         backRightAngleMotor.configFactoryDefault();
         backLeftAngleMotor.configFactoryDefault();
     
+        //configure the rotation encoders correctly so that they can be read by the talons
         frontRightAngleMotor.configSelectedFeedbackSensor(FeedbackDevice.Analog);
         frontLeftAngleMotor.configSelectedFeedbackSensor(FeedbackDevice.Analog);
         backRightAngleMotor.configSelectedFeedbackSensor(FeedbackDevice.Analog);
         backLeftAngleMotor.configSelectedFeedbackSensor(FeedbackDevice.Analog);
 
-        frontRightAngleMotor.setSensorPhase(sensorPhasefr);
+        frontRightAngleMotor.setSensorPhase(sensorPhasefr); //set the sensorphase
         frontLeftAngleMotor.setSensorPhase(sensorPhasefl);
         backLeftAngleMotor.setSensorPhase(sensorPhaseBl);
         backRightAngleMotor.setSensorPhase(sensorPhaseBr);
         
+        //configure built in encoders on the falcons so they can be correctly used
         frontRightSpeedMotor.configSelectedFeedbackSensor(FeedbackDevice.QuadEncoder);
         frontLeftSpeedMotor.configSelectedFeedbackSensor(FeedbackDevice.QuadEncoder);
         backRightSpeedMotor.configSelectedFeedbackSensor(FeedbackDevice.QuadEncoder);
@@ -165,14 +166,14 @@ public class SwerveDrive extends SubsystemBase {
 
     }
 
-    private void configureGyro() {
+    private void configureGyro() { //set up pigeon
         gyro = new Pigeon2(0);
 
        gyro.setYaw(0, 69);
 
     }
 
-    private void configurePID() {
+    private void configurePID() { //set pid values for the encoders
 
         pidAnglefl = new PIDController(KpAnglefl, KiAnglefl, KdAnglefl);
         pidAnglefr = new PIDController(KpAnglefr, KiAnglefr, KdAnglefr);
@@ -181,6 +182,7 @@ public class SwerveDrive extends SubsystemBase {
 
 	}
 
+    //use this method if you are using encoders that don't plug directly into motor controllers
     // private void configureEncoders() {
 
     //     frontRightEncoder = new Encoder(7, 6);//new Encoder(4, 5);
@@ -196,40 +198,43 @@ public class SwerveDrive extends SubsystemBase {
     //     backLeftEncoder.setDistancePerPulse(1./TICKS_TO_DEGREES);
 
     // }
+    
+    //this method takes in the inputs from a controller or seperate forward strafe and rotate values and converts them into the correct wheel speeds and positions
     private void calculateDrive(double FWD, double STR, double RCW, boolean useGyro) {
                
-        if(useGyro) {
+        if(useGyro) { //determine whether to use field centric orientation or not
 
             double gyroAngle = -gyro.getYaw() * PI / 180;
 
-            FWDNew = FWD*Math.cos(gyroAngle) + STR*Math.sin(gyroAngle);
+            FWDNew = FWD*Math.cos(gyroAngle) + STR*Math.sin(gyroAngle); //uses the gyro to calcualte field centric transformation
             STRNew = STR*Math.cos(gyroAngle) - FWD*Math.sin(gyroAngle);
 
         } else {
             
-            FWDNew = FWD*Math.cos(0) + STR*Math.sin(0);
+            FWDNew = FWD*Math.cos(0) + STR*Math.sin(0); //passes zero for robot oriented drive
             STRNew = STR*Math.cos(0) - FWD*Math.sin(0);
 
         }
 
-        double A = STRNew - RCW*(L/R);
+        double A = STRNew - RCW*(L/R); //values a b c and d are used to calcualte meaningful wheel speeds
         double B = STRNew + RCW*(L/R);
         double C = FWDNew - RCW*(W/R);
         double D = FWDNew + RCW*(W/R); 
 
-        double frontRightWheelSpeed = Math.sqrt(Math.pow(B, 2) + Math.pow(C, 2));
+        double frontRightWheelSpeed = Math.sqrt(Math.pow(B, 2) + Math.pow(C, 2)); //average the values of a b c and d to get wheel speeds
         double frontLeftWheelSpeed  = Math.sqrt(Math.pow(B, 2) + Math.pow(D, 2));
         double backLeftWheelSpeed   = Math.sqrt(Math.pow(A, 2) + Math.pow(D, 2));
         double backRightWheelSpeed  = Math.sqrt(Math.pow(A, 2) + Math.pow(C, 2));
 
-        double frontRightWheelAngle = (Math.atan2(B, C) * (180 / PI));
+        double frontRightWheelAngle = (Math.atan2(B, C) * (180 / PI)); // calculate the proper angles that each of the wheels ned to be
         double frontLeftWheelAngle  = (Math.atan2(B, D) * (180 / PI));
         double backLeftWheelAngle   = (Math.atan2(A, D) * (180 / PI));
         double backRightWheelAngle  = (Math.atan2(A, C) * (180 / PI));
 
+        //normalize wheel speeds
         double max = frontRightWheelSpeed;
 
-        //normalize wheel speeds
+        //find which wheel spped is the greatest
         if(frontLeftWheelSpeed > max) {
             max = frontLeftWheelSpeed;
         } else if(backLeftWheelSpeed > max) {
@@ -238,11 +243,13 @@ public class SwerveDrive extends SubsystemBase {
             max = backRightWheelSpeed;
         } else {}
 
+        //set each wheel to the greatest wheel speed
         frontRightWheelSpeed = max; 
         frontLeftWheelSpeed  = max; 
         backLeftWheelSpeed   = max; 
         backRightWheelSpeed  = max;
 
+        //set the angle and speed of all motors
         backLeftAngleMotor.set(pidAnglebl.calculate(ticksToDegrees(backLeftAngleMotor),      setDirection(backLeftWheelAngle,   backLeftAngleMotor, backLeftSpeedMotor, backLeftWheelSpeed)));
         backRightAngleMotor.set(pidAnglebr.calculate(ticksToDegrees(backRightAngleMotor),    setDirection(backRightWheelAngle,  backRightAngleMotor, backRightSpeedMotor, backRightWheelSpeed)));
         frontRightAngleMotor.set(pidAnglefr.calculate(ticksToDegrees(frontRightAngleMotor),  setDirection(frontRightWheelAngle, frontRightAngleMotor, frontRightSpeedMotor, frontRightWheelSpeed)));
@@ -286,6 +293,7 @@ public class SwerveDrive extends SubsystemBase {
         return direction;
     }
     
+    //converts ticks to degrees so the encoder values are easy to read
     private double ticksToDegrees(WPI_TalonSRX motor) {
         return motor.getSelectedSensorPosition() / (2.844444444444444444444444444444444444444444444);
     }
